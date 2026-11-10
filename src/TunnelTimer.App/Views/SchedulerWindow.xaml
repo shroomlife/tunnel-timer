@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="TunnelTimer.App.Views.SchedulerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:TunnelTimer.App.ViewModels">
+
+    <Grid x:Name="RootGrid" Background="{ThemeResource PaperBrush}">
+        <!-- Two soft colour fields behind the header. Decoration only. -->
+        <Canvas IsHitTestVisible="False">
+            <Ellipse
+                Canvas.Left="-130"
+                Canvas.Top="-190"
+                Width="400"
+                Height="400">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#55FF9F1C" />
+                        <GradientStop Offset="1" Color="#00FF9F1C" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse
+                Canvas.Left="150"
+                Canvas.Top="-170"
+                Width="400"
+                Height="400">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Offset="0" Color="#4A7B61FF" />
+                        <GradientStop Offset="1" Color="#007B61FF" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Canvas>
+
+        <Grid Padding="20,0,20,18" RowSpacing="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header: also the area that drags the window. -->
+            <Grid x:Name="HeaderBar" Grid.Row="0" ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image
+                    Width="28"
+                    Height="28"
+                    VerticalAlignment="Center"
+                    Source="ms-appx:///Assets/Logo.png" />
+                <TextBlock
+                    x:Uid="SchedulerHeading"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontFamily="{StaticResource DisplayFontFamily}"
+                    FontSize="20"
+                    FontWeight="Bold" />
+            </Grid>
+
+            <!-- Start time -->
+            <Border
+                Grid.Row="1"
+                Padding="14"
+                Background="{ThemeResource CardBrush}"
+                BorderBrush="{ThemeResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="20">
+                <StackPanel Spacing="8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <RepeatButton
+                            x:Uid="EarlierButton"
+                            Grid.Column="0"
+                            Width="44"
+                            Height="44"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Command="{x:Bind ViewModel.StepTimeCommand}"
+                            CommandParameter="-1"
+                            CornerRadius="22">
+                            <FontIcon FontSize="14" Glyph="&#xE738;" />
+                        </RepeatButton>
+                        <Button
+                            x:Uid="StartTimeButton"
+                            Grid.Column="1"
+                            Padding="8,0"
+                            HorizontalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0">
+                            <Button.Flyout>
+                                <TimePickerFlyout
+                                    x:Name="StartTimeFlyout"
+                                    MinuteIncrement="5"
+                                    Opening="OnStartTimeFlyoutOpening"
+                                    TimePicked="OnStartTimePicked" />
+                            </Button.Flyout>
+                            <TextBlock
+                                FontFamily="{StaticResource DisplayFontFamily}"
+                                FontSize="56"
+                                FontWeight="Bold"
+                                Text="{x:Bind ViewModel.SelectedTimeText, Mode=OneWay}"
+                                Typography.NumeralAlignment="Tabular" />
+                        </Button>
+                        <RepeatButton
+                            x:Uid="LaterButton"
+                            Grid.Column="2"
+                            Width="44"
+                            Height="44"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Command="{x:Bind ViewModel.StepTimeCommand}"
+                            CommandParameter="1"
+                            CornerRadius="22">
+                            <FontIcon FontSize="14" Glyph="&#xE710;" />
+                        </RepeatButton>
+                    </Grid>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.SelectedTimeHint, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Uid="QuickAdd15Button"
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.AddInCommand}"
+                            CommandParameter="15"
+                            Style="{StaticResource PillButtonStyle}" />
+                        <Button
+                            x:Uid="QuickAdd30Button"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.AddInCommand}"
+                            CommandParameter="30"
+                            Style="{StaticResource PillButtonStyle}" />
+                        <Button
+                            x:Uid="QuickAdd60Button"
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.AddInCommand}"
+                            CommandParameter="60"
+                            Style="{StaticResource PillButtonStyle}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Optional details and the add action -->
+            <StackPanel Grid.Row="2" Spacing="10">
+                <TextBox
+                    x:Uid="MeetingTitleBox"
+                    MaxLength="80"
+                    Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox
+                    x:Uid="MeetingLinkBox"
+                    InputScope="Url"
+                    IsSpellCheckEnabled="False"
+                    MaxLength="2000"
+                    Text="{x:Bind ViewModel.Link, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Button
+                    x:Uid="AddMeetingButton"
+                    Margin="0,4,0,0"
+                    HorizontalAlignment="Stretch"
+                    Command="{x:Bind ViewModel.AddCommand}"
+                    Style="{StaticResource PillAccentButtonStyle}" />
+                <InfoBar
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                    Severity="Error" />
+            </StackPanel>
+
+            <!-- Open meetings -->
+            <Grid Grid.Row="3" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="UpcomingHeading" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                <TextBlock
+                    x:Uid="NoMeetingsText"
+                    Grid.Row="1"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Visibility="{x:Bind VisibleWhenFalse(ViewModel.HasMeetings), Mode=OneWay}" />
+                <ListView
+                    Grid.Row="1"
+                    Margin="-4,0"
+                    ItemsSource="{x:Bind ViewModel.Meetings}"
+                    SelectionMode="None"
+                    Visibility="{x:Bind ViewModel.HasMeetings, Mode=OneWay}">
+                    <ListView.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="4,3" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:MeetingItem">
+                            <Border
+                                Padding="8,6,6,6"
+                                Background="{ThemeResource CardBrush}"
+                                BorderBrush="{ThemeResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                        Grid.Column="0"
+                                        Padding="9,4"
+                                        VerticalAlignment="Center"
+                                        Background="{ThemeResource InkBrush}"
+                                        CornerRadius="9">
+                                        <TextBlock
+                                            FontFamily="{StaticResource DisplayFontFamily}"
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource PaperBrush}"
+                                            Text="{x:Bind StartText}"
+                                            Typography.NumeralAlignment="Tabular" />
+                                    </Border>
+                                    <StackPanel
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                        <TextBlock Text="{x:Bind Title}" TextTrimming="CharacterEllipsis" />
+                                        <FontIcon
+                                            x:Uid="MeetingLinkIcon"
+                                            FontSize="14"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xE71B;"
+                                            Visibility="{x:Bind HasLink}" />
+                                    </StackPanel>
+                                    <Button
+                                        x:Uid="RemoveMeetingButton"
+                                        Grid.Column="2"
+                                        Width="36"
+                                        Height="36"
+                                        Padding="0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Command="{x:Bind RemoveCommand}"
+                                        CornerRadius="18">
+                                        <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <!-- App -->
+            <Grid Grid.Row="4" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ToggleSwitch
+                    x:Name="StartupToggle"
+                    x:Uid="StartupToggle"
+                    Grid.Column="0"
+                    IsEnabled="{x:Bind ViewModel.CanChangeStartup, Mode=OneWay}"
+                    IsOn="{x:Bind ViewModel.IsStartupEnabled, Mode=OneWay}"
+                    Toggled="OnStartupToggled" />
+                <Button
+                    x:Uid="QuitButton"
+                    Grid.Column="1"
+                    VerticalAlignment="Bottom"
+                    Command="{x:Bind ViewModel.QuitCommand}"
+                    Style="{StaticResource PillButtonStyle}" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

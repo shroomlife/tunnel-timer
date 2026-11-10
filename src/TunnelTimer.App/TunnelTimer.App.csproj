@@ -1,0 +1,114 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <!-- Windows 11 only: 10.0.22000.0 is the first Windows 11 release. -->
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <RootNamespace>TunnelTimer.App</RootNamespace>
+    <AssemblyName>TunnelTimer</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Custom entry point in Program.cs: single-instance check runs before any XAML. -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <!-- Keeps the compiled output independent of the directory it was built in. -->
+    <PathMap>$(MSBuildThisFileDirectory)=/_/</PathMap>
+    <!-- The package references float, the lock file pins what was actually resolved. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <!-- Packaging: sideload by default, -p:UapAppxPackageBuildMode=StoreUpload for the Store. -->
+  <PropertyGroup>
+    <UapAppxPackageBuildMode>SideloadOnly</UapAppxPackageBuildMode>
+    <!-- Sideload packages are signed with the developer certificate, the Store signs its own. -->
+    <AppxPackageSigningEnabled Condition="'$(AppxPackageSigningEnabled)' == '' AND '$(UapAppxPackageBuildMode)' != 'StoreUpload'">true</AppxPackageSigningEnabled>
+    <AppxPackageSigningEnabled Condition="'$(UapAppxPackageBuildMode)' == 'StoreUpload'">false</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint Condition="'$(AppxPackageSigningEnabled)' == 'true' AND '$(PackageCertificateKeyFile)' == ''">4501F2CDFC5B6EFBD5D6D418E4D9AA52CD2C367F</PackageCertificateThumbprint>
+    <GenerateAppxPackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GenerateAppxPackageOnBuild>
+    <AppxPackageDir>$(MSBuildThisFileDirectory)..\..\dist\</AppxPackageDir>
+    <AppxBundle>Never</AppxBundle>
+    <PublishReadyToRun Condition="'$(RuntimeIdentifier)' != '' AND '$(Configuration)' == 'Release'">true</PublishReadyToRun>
+  </PropertyGroup>
+
+  <!--
+    The Windows App SDK already includes everything under Assets as Content, which is enough
+    for the MSIX. Copying it to the output directory as well makes the loose-file layout that
+    `Add-AppxPackage -Register` uses during development complete, and lets code load the
+    icon from AppContext.BaseDirectory in both layouts.
+  -->
+  <ItemGroup>
+    <Content Update="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+    Lets the Single-project MSIX Packaging Tools activate for this project even before the
+    Windows App SDK NuGet package has been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)' != 'true' and '$(EnableMsixTooling)' == 'true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)' != 'true' and '$(EnableMsixTooling)' == 'true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Windows App SDK component packages instead of the Microsoft.WindowsAppSDK metapackage,
+      which since 2.x also ships Windows ML and Windows AI binaries this app does not use.
+      WinUI brings windowing, Foundation covers AppLifecycle, and Runtime keeps the
+      deployment framework-dependent on Microsoft.WindowsAppRuntime.2.
+    -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.*" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.6.*" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" Version="2.6.*" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.*" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.*" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.*">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!--
+      Prerelease on purpose: the stable 2.4.x line depends on the Microsoft.WindowsAppSDK 1.6
+      metapackage and collides with the 2.x component packages above.
+    -->
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.5.0-beta.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TunnelTimer.Core\TunnelTimer.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    The packaging targets locate mspdbcmf.exe, which builds the symbol package for Store
+    submissions, through $(VsInstallRoot). That property is empty when building with
+    `dotnet build` outside a Developer Command Prompt, so it is resolved through vswhere.
+    Without Visual Studio the property stays empty and the SDK only warns.
+  -->
+  <Target Name="ResolveVsInstallRootForSymbolPackage"
+          BeforeTargets="_EnsurePdbCmfExeFullPath"
+          Condition="'$(VsInstallRoot)' == '' and '$(VCToolsInstallDir)' == '' and '$(MsPdbCmfExeFullpath)' == ''">
+    <PropertyGroup>
+      <_VsWhereExe>$(MSBuildProgramFiles32)\Microsoft Visual Studio\Installer\vswhere.exe</_VsWhereExe>
+    </PropertyGroup>
+    <Exec Condition="Exists('$(_VsWhereExe)')"
+          Command="&quot;$(_VsWhereExe)&quot; -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath"
+          ConsoleToMSBuild="true"
+          StandardOutputImportance="low"
+          ContinueOnError="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_ResolvedVsInstallRoot" />
+    </Exec>
+    <PropertyGroup Condition="'$(_ResolvedVsInstallRoot)' != '' and Exists('$(_ResolvedVsInstallRoot)')">
+      <VsInstallRoot>$(_ResolvedVsInstallRoot)</VsInstallRoot>
+    </PropertyGroup>
+  </Target>
+</Project>

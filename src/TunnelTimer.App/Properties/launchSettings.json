@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TunnelTimer.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TunnelTimer.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

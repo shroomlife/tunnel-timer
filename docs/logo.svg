@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Tunnel Timer">
+  <defs>
+    <clipPath id="tile"><rect width="256" height="256" rx="58"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="#1B1A2E"/>
+    <g fill="none" stroke-width="14">
+      <path d="M28 256 L28 140 A100 100 0 0 1 228 140 L228 256" stroke="#FF5E5B"/>
+      <path d="M44 256 L44 140 A84 84 0 0 1 212 140 L212 256" stroke="#FF9F1C"/>
+      <path d="M60 256 L60 140 A68 68 0 0 1 196 140 L196 256" stroke="#FFD23F"/>
+      <path d="M76 256 L76 140 A52 52 0 0 1 180 140 L180 256" stroke="#3DDC97"/>
+      <path d="M92 256 L92 140 A36 36 0 0 1 164 140 L164 256" stroke="#2EC4F1"/>
+      <path d="M108 256 L108 140 A20 20 0 0 1 148 140 L148 256" stroke="#7B61FF"/>
+    </g>
+    <path d="M115 256 L115 140 A13 13 0 0 1 141 140 L141 256 Z" fill="#FFF6DC"/>
+  </g>
+</svg>

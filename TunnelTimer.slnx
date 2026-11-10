@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TunnelTimer.App/TunnelTimer.App.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/TunnelTimer.Core/TunnelTimer.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TunnelTimer.Core.Tests/TunnelTimer.Core.Tests.csproj" />
+  </Folder>
+</Solution>

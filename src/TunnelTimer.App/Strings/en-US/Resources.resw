@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>Tunnel Timer</value>
+  </data>
+  <data name="DefaultMeetingTitle" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="WidgetStartsAtFormat" xml:space="preserve">
+    <value>Starts at {0}</value>
+    <comment>{0} is the start time, for example 12:00.</comment>
+  </data>
+  <data name="SchedulerErrorPastTime" xml:space="preserve">
+    <value>That time has already passed today.</value>
+  </data>
+  <data name="AcknowledgeButton.Content" xml:space="preserve">
+    <value>I'm in</value>
+  </data>
+  <data name="MeetingTitleBox.Header" xml:space="preserve">
+    <value>Title (optional)</value>
+  </data>
+  <data name="MeetingTitleBox.PlaceholderText" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="AddMeetingButton.Content" xml:space="preserve">
+    <value>Add meeting</value>
+  </data>
+  <data name="QuickAdd15Button.Content" xml:space="preserve">
+    <value>in 15 min</value>
+  </data>
+  <data name="QuickAdd30Button.Content" xml:space="preserve">
+    <value>in 30 min</value>
+  </data>
+  <data name="QuickAdd60Button.Content" xml:space="preserve">
+    <value>in 60 min</value>
+  </data>
+  <data name="UpcomingHeading.Text" xml:space="preserve">
+    <value>Upcoming</value>
+  </data>
+  <data name="NoMeetingsText.Text" xml:space="preserve">
+    <value>No meetings planned.</value>
+  </data>
+  <data name="RemoveMeetingButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove meeting</value>
+  </data>
+  <data name="RemoveMeetingButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Remove meeting</value>
+  </data>
+  <data name="StartupToggle.Header" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="QuitButton.Content" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="SchedulerErrorInvalidLink" xml:space="preserve">
+    <value>That link is not a web address. It has to start with https://</value>
+  </data>
+  <data name="JoinButton.Content" xml:space="preserve">
+    <value>Join meeting</value>
+  </data>
+  <data name="AlreadyInButton.Content" xml:space="preserve">
+    <value>I'm already in</value>
+  </data>
+  <data name="MeetingLinkBox.Header" xml:space="preserve">
+    <value>Link (optional)</value>
+  </data>
+  <data name="MeetingLinkBox.PlaceholderText" xml:space="preserve">
+    <value>Paste a Zoom link</value>
+  </data>
+  <data name="MeetingLinkIcon.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Has a meeting link</value>
+  </data>
+  <data name="SchedulerHeading.Text" xml:space="preserve">
+    <value>New meeting</value>
+  </data>
+  <data name="SchedulerHintFormat" xml:space="preserve">
+    <value>in {0}, countdown shows from {1}</value>
+  </data>
+  <data name="SchedulerHintSoonFormat" xml:space="preserve">
+    <value>in {0}, countdown shows right away</value>
+  </data>
+  <data name="SchedulerHintPast" xml:space="preserve">
+    <value>Already passed today</value>
+  </data>
+  <data name="EarlierButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Five minutes earlier</value>
+  </data>
+  <data name="LaterButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Five minutes later</value>
+  </data>
+  <data name="StartTimeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Start time, opens the time picker</value>
+  </data>
+</root>
