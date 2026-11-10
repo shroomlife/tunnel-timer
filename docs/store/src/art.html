@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tunnel Timer Store art</title>
+<!--
+  Draws the Microsoft Store logo art. The viewport size decides the format:
+  square (box art, app tile), portrait (poster) or landscape (hero).
+  ?title=0 leaves the name out, for the hero image and the small tile.
+  Rendered to PNG by scripts/render-store-assets.ps1.
+-->
+<style>
+  @font-face { font-family: "Outfit"; src: url("../../../src/TunnelTimer.App/Assets/Fonts/Outfit.ttf"); font-weight: 100 900; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #1B1A2E; overflow: hidden; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: "Outfit", sans-serif; color: #FFFFFF; }
+  .glow { position: absolute; border-radius: 50%; }
+  svg { position: relative; display: block; }
+  h1 { position: relative; margin: 0; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  p { position: relative; margin: 0; font-weight: 400; color: #C9C7E0; line-height: 1.2; }
+</style>
+</head>
+<body>
+<div class="glow" id="g1"></div>
+<div class="glow" id="g2"></div>
+<div class="glow" id="g3"></div>
+
+<svg id="mark" viewBox="0 0 256 232" aria-hidden="true">
+  <g fill="none" stroke-width="14" stroke-linecap="butt">
+    <path d="M28 232 L28 116 A100 100 0 0 1 228 116 L228 232" stroke="#FF5E5B"/>
+    <path d="M44 232 L44 116 A84 84 0 0 1 212 116 L212 232" stroke="#FF9F1C"/>
+    <path d="M60 232 L60 116 A68 68 0 0 1 196 116 L196 232" stroke="#FFD23F"/>
+    <path d="M76 232 L76 116 A52 52 0 0 1 180 116 L180 232" stroke="#3DDC97"/>
+    <path d="M92 232 L92 116 A36 36 0 0 1 164 116 L164 232" stroke="#2EC4F1"/>
+    <path d="M108 232 L108 116 A20 20 0 0 1 148 116 L148 232" stroke="#7B61FF"/>
+  </g>
+  <path d="M115 232 L115 116 A13 13 0 0 1 141 116 L141 232 Z" fill="#FFF6DC"/>
+</svg>
+<h1 id="title">Tunnel Timer</h1>
+<p id="tagline">Meeting Countdown</p>
+
+<script>
+  const width = innerWidth, height = innerHeight;
+  const short = Math.min(width, height);
+  const showTitle = new URLSearchParams(location.search).get('title') !== '0';
+  const landscape = width > height * 1.2;
+
+  const glow = (id, x, y, size, color) => {
+    const element = document.getElementById(id);
+    Object.assign(element.style, { left: (x - size / 2) + 'px', top: (y - size / 2) + 'px', width: size + 'px', height: size + 'px', background: `radial-gradient(circle, ${color}, rgba(0,0,0,0) 68%)` });
+  };
+  glow('g1', width * 0.12, height * 0.1, short * 1.3, 'rgba(123,97,255,0.42)');
+  glow('g2', width * 0.92, height * 0.3, short * 1.2, 'rgba(46,196,241,0.26)');
+  glow('g3', width * 0.5, height * 1.05, short * 1.3, 'rgba(255,94,91,0.26)');
+
+  const mark = document.getElementById('mark');
+  const title = document.getElementById('title');
+  const tagline = document.getElementById('tagline');
+
+  if (showTitle) {
+    const markWidth = short * 0.52;
+    mark.style.width = markWidth + 'px';
+    title.style.fontSize = (short * 0.118) + 'px';
+    title.style.marginTop = (short * 0.07) + 'px';
+    tagline.style.fontSize = (short * 0.05) + 'px';
+    tagline.style.marginTop = (short * 0.022) + 'px';
+  } else {
+    // The mark alone, standing on the bottom edge like a tunnel entrance.
+    title.remove();
+    tagline.remove();
+    document.body.style.justifyContent = 'flex-end';
+    mark.style.width = (landscape ? height * 0.92 : short * 0.78) + 'px';
+  }
+</script>
+</body>
+</html>

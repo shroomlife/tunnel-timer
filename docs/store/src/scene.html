@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tunnel Timer Store screenshot scene</title>
+<!--
+  Composes one Microsoft Store screenshot (1440x810). The app windows are the real, unscaled
+  captures from docs/; everything behind them is a neutral stand-in for "your work".
+  Select the scene with ?s=upcoming | imminent | overdue | panel.
+  Rendered to PNG by scripts/render-store-assets.ps1.
+-->
+<style>
+  html, body { margin: 0; }
+  body { width: 1440px; height: 810px; overflow: hidden; position: relative; background: #EDE9E1; font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif; }
+  .glow { position: absolute; border-radius: 50%; }
+  .work { position: absolute; left: 96px; top: 84px; width: 1010px; height: 642px; border-radius: 10px; background: #FFFFFF; box-shadow: 0 30px 70px rgba(27, 26, 46, 0.16), 0 0 0 1px rgba(27, 26, 46, 0.08); overflow: hidden; }
+  .work header { height: 44px; background: #F4F2EE; border-bottom: 1px solid #E7E2D9; display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; background: #D8D2C7; }
+  .tab { margin-left: 18px; width: 150px; height: 26px; border-radius: 7px; background: #FFFFFF; }
+  .tab + .tab { margin-left: 0; background: #EAE6DF; }
+  .body { display: flex; height: 598px; }
+  .side { width: 210px; background: #FAF8F5; border-right: 1px solid #EFEAE2; padding: 22px 18px; box-sizing: border-box; }
+  .lines { flex: 1; padding: 26px 30px; box-sizing: border-box; }
+  .bar { height: 11px; border-radius: 6px; background: #E9E5DE; margin-bottom: 15px; }
+  .side .bar { background: #ECE7DF; }
+  .bar.a { background: #CFE6DD; } .bar.b { background: #D4DEF2; } .bar.c { background: #EADFC9; } .bar.d { background: #E5D7EE; }
+  .shot { position: absolute; border-radius: 8px; overflow: hidden; box-shadow: 0 26px 60px rgba(27, 26, 46, 0.30), 0 2px 8px rgba(27, 26, 46, 0.14), 0 0 0 1px rgba(27, 26, 46, 0.14); }
+  .shot img { display: block; position: absolute; }
+  #widget { right: 44px; top: 40px; }
+  #panel { right: 44px; bottom: 26px; }
+</style>
+</head>
+<body>
+<div class="glow" style="left:-220px; top:-260px; width:900px; height:900px; background: radial-gradient(circle, rgba(61,220,151,0.34), rgba(61,220,151,0) 68%)"></div>
+<div class="glow" style="left:420px; top:330px; width:980px; height:980px; background: radial-gradient(circle, rgba(46,196,241,0.30), rgba(46,196,241,0) 68%)"></div>
+<div class="glow" style="right:-260px; top:-200px; width:900px; height:900px; background: radial-gradient(circle, rgba(123,97,255,0.30), rgba(123,97,255,0) 68%)"></div>
+<div class="glow" style="left:-200px; bottom:-380px; width:800px; height:800px; background: radial-gradient(circle, rgba(255,159,28,0.24), rgba(255,159,28,0) 68%)"></div>
+
+<div class="work" aria-hidden="true">
+  <header><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="tab"></span><span class="tab"></span><span class="tab"></span></header>
+  <div class="body">
+    <div class="side" id="side"></div>
+    <div class="lines" id="lines"></div>
+  </div>
+</div>
+
+<div class="shot" id="widget"><img id="widgetImage" alt=""></div>
+<div class="shot" id="panel" hidden><img id="panelImage" alt=""></div>
+
+<script>
+  const scene = new URLSearchParams(location.search).get('s') || 'upcoming';
+
+  // Deterministic stand-in content: the same bars on every render.
+  const sideWidths = [70, 52, 84, 60, 44, 76, 58, 90, 48, 66, 80, 54];
+  document.getElementById('side').innerHTML = sideWidths.map(w => `<div class="bar" style="width:${w}%"></div>`).join('');
+  const lineWidths = [38, 72, 64, 0, 48, 86, 78, 56, 0, 30, 68, 82, 74, 44, 0, 52, 88, 60, 36, 0, 46, 70];
+  const tints = ['a', '', '', '', 'b', '', '', 'c', '', 'd', '', '', 'a', '', '', 'b', '', '', 'c', '', 'd', ''];
+  document.getElementById('lines').innerHTML = lineWidths.map((w, i) => w ? `<div class="bar ${tints[i]}" style="width:${w}%; margin-left:${(i % 5 === 1 || i % 5 === 2) ? 28 : 0}px"></div>` : '<div style="height:14px"></div>').join('');
+
+  // The widget captures include the window's invisible 7 px resize border left, right and bottom.
+  const widgetFile = { upcoming: 'widget-upcoming.png', imminent: 'widget-imminent.png', overdue: 'widget-overdue.png', panel: 'widget-upcoming.png' }[scene];
+  const widget = document.getElementById('widget');
+  const widgetImage = document.getElementById('widgetImage');
+  widgetImage.onload = () => {
+    widget.style.width = (widgetImage.naturalWidth - 14) + 'px';
+    widget.style.height = (widgetImage.naturalHeight - 7) + 'px';
+    widgetImage.style.left = '-7px';
+    widgetImage.style.top = '0';
+  };
+  widgetImage.src = '../../' + widgetFile;
+
+  if (scene === 'panel') {
+    const panel = document.getElementById('panel');
+    const panelImage = document.getElementById('panelImage');
+    panel.hidden = false;
+    panelImage.onload = () => {
+      panel.style.width = panelImage.naturalWidth + 'px';
+      panel.style.height = panelImage.naturalHeight + 'px';
+    };
+    panelImage.src = '../../panel.png';
+    widget.style.right = '470px';
+  }
+</script>
+</body>
+</html>
