@@ -4,3 +4,4 @@ GetDpiForWindow
 RegisterApplicationRestart
 SetForegroundWindow
 AllowSetForegroundWindow
+DwmSetWindowAttribute

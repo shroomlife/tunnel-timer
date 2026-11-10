@@ -57,6 +57,27 @@
                         <GradientStop Offset="1" Color="#7B61FF" />
                     </LinearGradientBrush>
 
+                    <!--
+                        The spectrum twice in a row, each run ending in the colour it starts
+                        with. A surface twice as wide as its window can slide by half its width
+                        and look the same again, which makes an endless loop without a seam.
+                    -->
+                    <LinearGradientBrush x:Key="RainbowLoopBrush" StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Offset="0" Color="#FF5E5B" />
+                        <GradientStop Offset="0.0833" Color="#FF9F1C" />
+                        <GradientStop Offset="0.1667" Color="#FFD23F" />
+                        <GradientStop Offset="0.25" Color="#3DDC97" />
+                        <GradientStop Offset="0.3333" Color="#2EC4F1" />
+                        <GradientStop Offset="0.4167" Color="#7B61FF" />
+                        <GradientStop Offset="0.5" Color="#FF5E5B" />
+                        <GradientStop Offset="0.5833" Color="#FF9F1C" />
+                        <GradientStop Offset="0.6667" Color="#FFD23F" />
+                        <GradientStop Offset="0.75" Color="#3DDC97" />
+                        <GradientStop Offset="0.8333" Color="#2EC4F1" />
+                        <GradientStop Offset="0.9167" Color="#7B61FF" />
+                        <GradientStop Offset="1" Color="#FF5E5B" />
+                    </LinearGradientBrush>
+
                     <!-- One brush per countdown phase, dark enough for large digits on a light surface. -->
                     <LinearGradientBrush x:Key="PhaseUpcomingBrush" StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Offset="0" Color="#0B8F6A" />
@@ -81,6 +102,7 @@
                     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="SecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="RainbowBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="RainbowLoopBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="PhaseUpcomingBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="PhaseImminentBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="PhaseOverdueBrush" Color="{ThemeResource SystemColorHighlightColor}" />

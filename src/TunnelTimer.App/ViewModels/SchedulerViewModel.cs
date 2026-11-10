@@ -35,6 +35,9 @@ public sealed partial class SchedulerViewModel : ObservableObject
         RefreshMeetings();
     }
 
+    /// <summary>Raised after a meeting was added. The panel closes on it: the job is done.</summary>
+    public event EventHandler? MeetingAdded;
+
     public ObservableCollection<MeetingItem> Meetings { get; } = [];
 
     [ObservableProperty]
@@ -47,6 +50,10 @@ public sealed partial class SchedulerViewModel : ObservableObject
     /// <summary>Start time of day for the new meeting, today.</summary>
     [ObservableProperty]
     public partial TimeSpan SelectedTime { get; set; }
+
+    /// <summary>A start time typed as digits, for example "1656". Applied with Enter.</summary>
+    [ObservableProperty]
+    public partial string TimeInput { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial string SelectedTimeText { get; private set; } = string.Empty;
@@ -75,9 +82,32 @@ public sealed partial class SchedulerViewModel : ObservableObject
     {
         Title = string.Empty;
         Link = string.Empty;
+        TimeInput = string.Empty;
         HasError = false;
         SelectedTime = NextHalfHour(_timeProvider.GetLocalNow().TimeOfDay);
         DescribeSelectedTime();
+    }
+
+    /// <summary>
+    /// Adds a meeting at the typed time, with the title and link from the form. Empty input
+    /// does nothing; unreadable input shows an error and stays in the box for correction.
+    /// </summary>
+    public void AddFromTimeInput()
+    {
+        if (string.IsNullOrWhiteSpace(TimeInput))
+        {
+            return;
+        }
+
+        if (!TimeOfDayInput.TryParse(TimeInput, out var timeOfDay))
+        {
+            ShowError("SchedulerErrorInvalidTime");
+            return;
+        }
+
+        SelectedTime = timeOfDay;
+        TimeInput = string.Empty;
+        Add();
     }
 
     public async Task RefreshStartupStatusAsync() => ApplyStartupStatus(await _startupService.GetStatusAsync());
@@ -189,6 +219,7 @@ public sealed partial class SchedulerViewModel : ObservableObject
         Title = string.Empty;
         Link = string.Empty;
         HasError = false;
+        MeetingAdded?.Invoke(this, EventArgs.Empty);
     }
 
     private void ShowError(string resourceKey)

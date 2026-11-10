@@ -4,11 +4,14 @@ using Microsoft.UI.Xaml.Controls;
 using TunnelTimer.App.ViewModels;
 using TunnelTimer.Core;
 using Windows.Foundation;
+using Windows.UI.ViewManagement;
 
 namespace TunnelTimer.App.Views;
 
 public sealed partial class WidgetView : UserControl
 {
+    private readonly UISettings _uiSettings = new();
+
     public WidgetView(WidgetViewModel viewModel)
     {
         ViewModel = viewModel;
@@ -19,6 +22,22 @@ public sealed partial class WidgetView : UserControl
     }
 
     public WidgetViewModel ViewModel { get; }
+
+    /// <summary>
+    /// Runs the moving spectrum in the grip while the widget is on screen. It stays still when
+    /// the user has turned animation effects off in the Windows settings.
+    /// </summary>
+    public void SetGripAnimation(bool isRunning)
+    {
+        if (isRunning && _uiSettings.AnimationsEnabled)
+        {
+            GripStoryboard.Begin();
+        }
+        else
+        {
+            GripStoryboard.Stop();
+        }
+    }
 
     /// <summary>
     /// Bounds of the area holding the buttons, relative to the window content. Everything

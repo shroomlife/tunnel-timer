@@ -163,6 +163,17 @@
                             CommandParameter="60"
                             Style="{StaticResource PillButtonStyle}" />
                     </Grid>
+                    <!-- Any minute, typed: "1656" and Enter adds the meeting, like the buttons above. -->
+                    <TextBox
+                        x:Name="TimeInputBox"
+                        x:Uid="TimeInputBox"
+                        CornerRadius="16"
+                        InputScope="Number"
+                        IsSpellCheckEnabled="False"
+                        KeyDown="OnTimeInputKeyDown"
+                        MaxLength="5"
+                        Text="{x:Bind ViewModel.TimeInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextAlignment="Center" />
                 </StackPanel>
             </Border>
 

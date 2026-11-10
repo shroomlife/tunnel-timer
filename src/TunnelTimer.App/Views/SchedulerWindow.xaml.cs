@@ -2,9 +2,11 @@ using System.Globalization;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using TunnelTimer.App.Services;
 using TunnelTimer.App.ViewModels;
 using Windows.Graphics;
+using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using WinRT.Interop;
@@ -55,6 +57,9 @@ public sealed partial class SchedulerWindow : Window
         // link from another window.
         presenter.IsAlwaysOnTop = true;
 
+        // Adding a meeting is what the panel is opened for, so it closes once that is done.
+        ViewModel.MeetingAdded += (_, _) => AppWindow.Hide();
+
         AppWindow.Closing += (_, args) =>
         {
             args.Cancel = true;
@@ -78,7 +83,8 @@ public sealed partial class SchedulerWindow : Window
         {
             // Opening resets the form. A click while the panel is already open only brings it
             // to the front and keeps what the user has typed.
-            if (!AppWindow.IsVisible)
+            var isOpening = !AppWindow.IsVisible;
+            if (isOpening)
             {
                 PlaceOnScreen();
                 ViewModel.ResetForm();
@@ -91,6 +97,12 @@ public sealed partial class SchedulerWindow : Window
             Activate();
             AppWindow.MoveInZOrderAtTop();
             PInvoke.SetForegroundWindow(new HWND(WindowNative.GetWindowHandle(this)));
+
+            // The panel opens ready for typing: digits and Enter add a meeting.
+            if (isOpening)
+            {
+                FocusTimeInput();
+            }
 
             await ViewModel.RefreshStartupStatusAsync();
         }
@@ -122,6 +134,35 @@ public sealed partial class SchedulerWindow : Window
 
     private void OnStartTimePicked(TimePickerFlyout sender, TimePickedEventArgs args) =>
         ViewModel.SelectedTime = args.NewTime;
+
+    private void FocusTimeInput()
+    {
+        // The first time the panel opens its content is not loaded yet and cannot take the
+        // focus; the first control in tab order would get it instead.
+        if (TimeInputBox.IsLoaded)
+        {
+            TimeInputBox.Focus(FocusState.Programmatic);
+            return;
+        }
+
+        TimeInputBox.Loaded += OnTimeInputLoaded;
+    }
+
+    private void OnTimeInputLoaded(object sender, RoutedEventArgs e)
+    {
+        TimeInputBox.Loaded -= OnTimeInputLoaded;
+        TimeInputBox.Focus(FocusState.Programmatic);
+    }
+
+    private void OnTimeInputKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        // Enter adds a meeting at the typed time, with the title and link from the form.
+        if (e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            ViewModel.AddFromTimeInput();
+        }
+    }
 
     private async void OnStartupToggled(object sender, RoutedEventArgs e)
     {

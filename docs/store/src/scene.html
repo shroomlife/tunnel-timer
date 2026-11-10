@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <title>Tunnel Timer Store screenshot scene</title>
 <!--
-  Composes one Microsoft Store screenshot (1440x810). The app windows are the real, unscaled
-  captures from docs/; everything behind them is a neutral stand-in for "your work".
+  Composes one Microsoft Store screenshot. The scene is laid out for 1440x810 and enlarged
+  with ?z=, so z=2.6667 at a 3840x2160 viewport gives a 4K image. The app windows are the
+  real widget and panel, drawn by the app itself at three times their size (see
+  ScreenshotExport.cs), so they stay sharp when enlarged; everything behind them is a neutral
+  stand-in for "your work".
   Select the scene with ?s=upcoming | imminent | overdue | panel, or ?s=trio for the README
   banner, which takes its size from the viewport.
   Rendered to PNG by scripts/render-store-assets.ps1.
@@ -29,6 +32,8 @@
   .shot img { display: block; position: absolute; }
   #widget { right: 44px; top: 40px; }
   #panel { right: 44px; bottom: 26px; }
+  /* The panel's close button belongs to the window frame, which the app does not draw itself. */
+  .close { position: absolute; right: 16px; top: 13px; width: 10px; height: 10px; opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -46,10 +51,28 @@
 </div>
 
 <div class="shot" id="widget"><img id="widgetImage" alt=""></div>
-<div class="shot" id="panel" hidden><img id="panelImage" alt=""></div>
+<div class="shot" id="panel" hidden><img id="panelImage" alt=""><svg class="close" viewBox="0 0 10 10"><path d="M0.5 0.5 L9.5 9.5 M9.5 0.5 L0.5 9.5" stroke="#1B1A2E" stroke-width="1" fill="none"/></svg></div>
 
 <script>
-  const scene = new URLSearchParams(location.search).get('s') || 'upcoming';
+  const parameters = new URLSearchParams(location.search);
+  const scene = parameters.get('s') || 'upcoming';
+
+  // The whole scene is enlarged as one piece; the body keeps its layout size.
+  const zoom = Number(parameters.get('z')) || 1;
+  document.body.style.zoom = zoom;
+  document.body.style.width = (window.innerWidth / zoom) + 'px';
+  document.body.style.height = (window.innerHeight / zoom) + 'px';
+
+  // The app images are three times their on-screen size.
+  const imageScale = 3;
+  function fit(frame, image) {
+    const width = image.naturalWidth / imageScale;
+    const height = image.naturalHeight / imageScale;
+    frame.style.width = width + 'px';
+    frame.style.height = height + 'px';
+    image.style.width = width + 'px';
+    image.style.height = height + 'px';
+  }
 
   // Deterministic stand-in content: the same bars on every render.
   const sideWidths = [70, 52, 84, 60, 44, 76, 58, 90, 48, 66, 80, 54];
@@ -58,16 +81,10 @@
   const tints = ['a', '', '', '', 'b', '', '', 'c', '', 'd', '', '', 'a', '', '', 'b', '', '', 'c', '', 'd', ''];
   document.getElementById('lines').innerHTML = lineWidths.map((w, i) => w ? `<div class="bar ${tints[i]}" style="width:${w}%; margin-left:${(i % 5 === 1 || i % 5 === 2) ? 28 : 0}px"></div>` : '<div style="height:14px"></div>').join('');
 
-  // The widget captures include the window's invisible 7 px resize border left, right and bottom.
   const widgetFile = { upcoming: 'widget-upcoming.png', imminent: 'widget-imminent.png', overdue: 'widget-overdue.png', panel: 'widget-upcoming.png' }[scene];
   const widget = document.getElementById('widget');
   const widgetImage = document.getElementById('widgetImage');
-  widgetImage.onload = () => {
-    widget.style.width = (widgetImage.naturalWidth - 14) + 'px';
-    widget.style.height = (widgetImage.naturalHeight - 7) + 'px';
-    widgetImage.style.left = '-7px';
-    widgetImage.style.top = '0';
-  };
+  widgetImage.onload = () => fit(widget, widgetImage);
   widgetImage.src = '../../' + widgetFile;
 
   if (scene === 'trio') {
@@ -81,12 +98,7 @@
       shot.className = 'shot';
       shot.style.position = 'relative';
       const image = new Image();
-      image.onload = () => {
-        shot.style.width = (image.naturalWidth - 14) + 'px';
-        shot.style.height = (image.naturalHeight - 7) + 'px';
-        image.style.left = '-7px';
-        image.style.top = '0';
-      };
+      image.onload = () => fit(shot, image);
       image.src = '../../' + file;
       shot.appendChild(image);
       row.appendChild(shot);
@@ -98,10 +110,7 @@
     const panel = document.getElementById('panel');
     const panelImage = document.getElementById('panelImage');
     panel.hidden = false;
-    panelImage.onload = () => {
-      panel.style.width = panelImage.naturalWidth + 'px';
-      panel.style.height = panelImage.naturalHeight + 'px';
-    };
+    panelImage.onload = () => fit(panel, panelImage);
     panelImage.src = '../../panel.png';
     widget.style.right = '470px';
   }

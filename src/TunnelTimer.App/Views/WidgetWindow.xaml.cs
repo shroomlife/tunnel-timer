@@ -1,6 +1,8 @@
+using System.Runtime.InteropServices;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using TunnelTimer.App.Services;
 using TunnelTimer.App.ViewModels;
 using TunnelTimer.Core;
@@ -8,6 +10,7 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using WinRT.Interop;
 
 namespace TunnelTimer.App.Views;
@@ -28,6 +31,12 @@ public sealed partial class WidgetWindow : Window
     private readonly WidgetView _view;
     private readonly WidgetPositionStore _positionStore;
     private readonly InputNonClientPointerSource _nonClientSource;
+
+    // Two seconds at five passes a second: far beyond a first frame, short for a reminder.
+    private const int MaxPassesWhileCloaked = 10;
+
+    private bool _isCloaked;
+    private int _passesWhileCloaked;
 
     public WidgetWindow(WidgetViewModel viewModel, WidgetPositionStore positionStore)
     {
@@ -74,6 +83,14 @@ public sealed partial class WidgetWindow : Window
 
         if (shouldBeVisible == AppWindow.IsVisible)
         {
+            // Safety net for the cloak below: a countdown nobody can see is the worst failure,
+            // so the widget is revealed after a few passes even if no frame was reported.
+            if (_isCloaked && ++_passesWhileCloaked >= MaxPassesWhileCloaked)
+            {
+                AppLog.Error("The widget reported no rendered frame; revealed without one", new TimeoutException());
+                Reveal();
+            }
+
             return;
         }
 
@@ -81,13 +98,91 @@ public sealed partial class WidgetWindow : Window
         {
             PlaceOnScreen();
 
+            // The move can land on a monitor with another scaling. Fitting again here gives
+            // the right size before the first frame, not a visible jump one pass later.
+            FitToContent();
+            _view.SetGripAnimation(isRunning: true);
+
+            // Windows shows a window at once, XAML draws into it a moment later; in between
+            // the widget was an empty white box for about a third of a second. It is therefore
+            // shown cloaked, composed but not visible, and revealed with its first frame.
+            Cloak();
+
             // Shown without activation: the widget must not pull focus out of the user's work.
             AppWindow.Show(activateWindow: false);
         }
         else
         {
             AppWindow.Hide();
+            Reveal();
+            _view.SetGripAnimation(isRunning: false);
         }
+    }
+
+    private void Cloak()
+    {
+        if (!SetCloak(isCloaked: true))
+        {
+            return;
+        }
+
+        _isCloaked = true;
+        _passesWhileCloaked = 0;
+        CompositionTarget.Rendered += OnFrameRendered;
+    }
+
+    private void Reveal()
+    {
+        if (!_isCloaked)
+        {
+            return;
+        }
+
+        CompositionTarget.Rendered -= OnFrameRendered;
+        _isCloaked = false;
+        SetCloak(isCloaked: false);
+    }
+
+    private async void OnFrameRendered(object? sender, RenderedEventArgs e)
+    {
+        // The event covers every window of the app. Only a frame drawn after the widget's
+        // content is in the tree contains the widget.
+        if (!_view.IsLoaded)
+        {
+            return;
+        }
+
+        CompositionTarget.Rendered -= OnFrameRendered;
+
+        // async void: nothing observes this handler, so every failure ends here, and the
+        // widget is revealed either way.
+        try
+        {
+            // Rendered means XAML has drawn the frame, not that the compositor has taken it
+            // over. Revealing right away still showed the bare window for two or three frames.
+            await Compositor.RequestCommitAsync();
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Waiting for the widget's first frame failed", exception);
+        }
+
+        Reveal();
+    }
+
+    private bool SetCloak(bool isCloaked)
+    {
+        BOOL value = isCloaked;
+        var result = PInvoke.DwmSetWindowAttribute(
+            new HWND(WindowNative.GetWindowHandle(this)),
+            DWMWINDOWATTRIBUTE.DWMWA_CLOAK,
+            MemoryMarshal.AsBytes(new ReadOnlySpan<BOOL>(in value)));
+        if (result.Failed)
+        {
+            AppLog.Error("Cloaking the widget failed", Marshal.GetExceptionForHR(result.Value) ?? new InvalidOperationException());
+        }
+
+        return result.Succeeded;
     }
 
     private double GetScale() =>

@@ -39,6 +39,16 @@ public partial class App : Application
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         var timeProvider = TimeProvider.System;
         var strings = new Strings();
+
+#if DEBUG
+        // Development tool: render the listing images and leave. See ScreenshotExport.
+        if (ScreenshotExport.TryGetFolder(out var screenshotFolder))
+        {
+            ExportScreenshots(screenshotFolder, strings);
+            return;
+        }
+#endif
+
         var schedule = new MeetingSchedule(new JsonMeetingStore(ApplicationData.Current.LocalFolder.Path));
         schedule.SaveFailed += (_, exception) => AppLog.Error("Saving meetings failed, will retry", exception);
 
@@ -94,6 +104,24 @@ public partial class App : Application
             return null;
         }
     }
+
+#if DEBUG
+    private async void ExportScreenshots(string folder, Strings strings)
+    {
+        // async void: nothing observes this, so the failure is logged here and the process
+        // ends either way.
+        try
+        {
+            await ScreenshotExport.RunAsync(folder, strings);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Exporting screenshots failed", exception);
+        }
+
+        Exit();
+    }
+#endif
 
     private void Quit()
     {

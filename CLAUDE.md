@@ -27,6 +27,10 @@ dotnet build src/TunnelTimer.App/TunnelTimer.App.csproj -c Release -p:Platform=x
 
 # Regenerate all icons and logos after changing the drawing
 pwsh scripts/generate-icons.ps1
+
+# Regenerate the Store screenshots, the README banner and docs/panel.png after a UI change.
+# Needs the registered debug build; quit the running app first.
+pwsh scripts/render-store-assets.ps1
 ```
 
 The quality gates are the compiler (zero warnings) and the unit tests. There is no linter.
@@ -72,6 +76,8 @@ Not solved: the widget is only visible on the virtual desktop it appeared on.
 - **Widget window setup order matters.** `AppWindow.SetPresenter` comes first, the presenter properties after it. `IsAlwaysOnTop` set before `SetPresenter` did not reach the window.
 - **Drag region.** Everything above the button is a caption region set through `InputNonClientPointerSource`. A passthrough region inside a caption region still hit-tests as caption, so the button row is simply left out of the caption rectangle.
 - **The widget is shown without activation** (`AppWindow.Show(false)`), so it never takes focus from the user's work.
+- **The widget is shown cloaked and revealed with its first frame.** `AppWindow.Show` puts the window on screen before XAML has drawn into it, which was measured as about 330 ms of empty white box. `DWMWA_CLOAK` keeps it composed but invisible until `CompositionTarget.Rendered` fires with the content loaded and `Compositor.RequestCommitAsync` has completed; revealing on `Rendered` alone still showed two or three bare frames. `WidgetWindow.Update` reveals after ten passes regardless, so a missing frame can never hide a countdown.
+- **The grip animation slides a `Rectangle` inside a `Canvas`.** Directly inside the `Grid` the oversized rectangle is clipped in its own coordinates and the cut-out moves with it. Only a render transform is animated, so the compositor runs it; do not animate a brush or a layout property there.
 - **The widget cannot be closed.** `AppWindow.Closing` is cancelled, the window is hidden from Alt+Tab and the taskbar, and it has no title bar. The only way out is the "I'm in" button, which removes the meeting.
 - **Meeting links open through `Launcher.LaunchUriAsync` as plain https.** Zoom's own `zoommtg://` scheme is registered by the Zoom client but Zoom withdrew its documentation and support, so the app does not build on it. The browser hands a Zoom link to the installed client. `MeetingLink.TryParse` only accepts http and https, so a stored link can never start another protocol handler.
 - **Startup task manifest entry has no `Executable` or `EntryPoint`.** Both break the startup activation in Windows App SDK apps. `Enabled="false"`: the user turns it on in the panel.
@@ -82,6 +88,15 @@ Not solved: the widget is only visible on the virtual desktop it appeared on.
 - **Assets are copied to the output directory** in addition to being package content, so the loose-file debug layout and the MSIX both find `Assets\AppIcon.ico` under `AppContext.BaseDirectory`.
 - **H.NotifyIcon.WinUI is a prerelease on purpose.** The stable 2.4.x line depends on the Windows App SDK 1.6 metapackage and collides with the 2.x component packages.
 - **Component packages, not the `Microsoft.WindowsAppSDK` metapackage**, which would ship Windows ML and Windows AI binaries.
+
+## Listing images
+
+`Services/ScreenshotExport.cs` exists only in debug builds. `TunnelTimer.exe --export-screenshots <folder>` shows the real widget and panel in fixed states and writes them as PNG at three times their on-screen size; `scripts/render-store-assets.ps1` runs it and composes the 3840x2160 Store screenshots from the result. What was tried and why it is built this way:
+
+- `RenderTargetBitmap.RenderAsync(element, width, height)` with a larger size only stretches the finished 100 % image: blurry. A `ScaleTransform` on the live content makes XAML draw text and shapes at the larger size, and the bitmap is then taken one to one.
+- The bitmap covers what is drawn, not the element: it needs a filled frame around the content and the clip one level below the frame.
+- The executable started on its own has no package identity and crashes at once. `Invoke-CommandInDesktopPackage` starts it inside the package context.
+- Not real in these images: the widget's backdrop (a measured flat colour) and the panel's close button (drawn in `scene.html`). Both belong to the window frame, which XAML does not render. The logo bitmap is swapped for its largest file by hand because the display scaling stays at 100 %.
 
 ## Known framework bug
 

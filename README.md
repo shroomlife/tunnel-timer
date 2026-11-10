@@ -32,13 +32,13 @@ Tunnel Timer puts the time where you cannot miss it and leaves you alone otherwi
 ## How it works
 
 1. Click the rainbow icon in the notification area.
-2. Set the start time, or pick "in 15 min", "in 30 min" or "in 60 min". Title and meeting link are optional.
+2. Type the start time as digits and press Enter: `1656` is 16:56, `930` is 9:30. Or pick "in 15 min", "in 30 min" or "in 60 min", or set the time with plus and minus. Title and meeting link are optional. The panel closes once the meeting is added.
 3. Keep working. Ten minutes before the start the countdown appears above all windows.
 4. Drag it wherever it is not in the way. It remembers the spot.
 5. Press **Join meeting** to open your link, or **I'm in** if you joined on your own. Only then does it go away.
 
 <p align="center">
-  <img src="docs/panel.png" width="320" alt="The panel for adding a meeting: large start time with minus and plus, optional title and link, list of upcoming meetings">
+  <img src="docs/panel.png" width="320" alt="The panel for adding a meeting: large start time with minus and plus, quick buttons, a field to type the time, optional title and link, list of upcoming meetings">
 </p>
 
 The colour tells you how close you are:

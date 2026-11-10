@@ -29,15 +29,46 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <!-- Grip: signals that the widget can be dragged, and carries the brand spectrum. -->
-        <Border
+        <Grid.Resources>
+            <!--
+                Slides the spectrum by exactly one of its two runs, every three seconds, forever. A
+                render transform is animated by the compositor, off the UI thread, so it does
+                not compete with the countdown.
+            -->
+            <Storyboard x:Name="GripStoryboard" RepeatBehavior="Forever">
+                <DoubleAnimation
+                    Storyboard.TargetName="GripShift"
+                    Storyboard.TargetProperty="X"
+                    From="-56"
+                    To="0"
+                    Duration="0:0:3" />
+            </Storyboard>
+        </Grid.Resources>
+
+        <!--
+            Grip: signals that the widget can be dragged, and carries the brand spectrum. The
+            spectrum is twice as wide as the grip, which clips it to its rounded shape. The
+            Canvas matters: a panel that sizes its children clips an oversized child in the
+            child's own coordinates, so the cut-out would slide along with the spectrum.
+        -->
+        <Grid
             Grid.Row="0"
             Width="56"
             Height="6"
             Margin="0,0,0,8"
             HorizontalAlignment="Center"
-            Background="{ThemeResource RainbowBrush}"
-            CornerRadius="3" />
+            CornerRadius="3">
+            <Canvas>
+                <Rectangle
+                    Width="112"
+                    Height="6"
+                    Fill="{ThemeResource RainbowLoopBrush}">
+                    <Rectangle.RenderTransform>
+                        <TranslateTransform x:Name="GripShift" X="-56" />
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Canvas>
+        </Grid>
 
         <TextBlock
             Grid.Row="1"

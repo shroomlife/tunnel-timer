@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0.0] - 2026-11-10
+
+### Added
+- **Type the start time.** A field under the quick buttons takes plain digits: `1656` and Enter adds a meeting at 16:56, `420` at 4:20, `9` at 9:00. `16:56` and `16.56` work too. That reaches any minute, not only the five minute steps of the arrows and the picker. Digits are read on the 24 hour clock. Title and link are taken from the form, like with the quick buttons.
+- The panel opens with the cursor in that field, so a meeting takes the digits and Enter.
+- **The spectrum in the widget's grip moves**, one run every three seconds. The compositor animates it, not the app's UI thread. It stands still when animation effects are turned off in the Windows settings and in high contrast.
+
+### Changed
+- **The panel closes once a meeting is added**, by the button, a quick button or the typed time.
+
+### Fixed
+- **The widget appeared as an empty white box for about a third of a second** before its content was drawn. It is now shown cloaked and revealed with its first complete frame.
+- A widget placed on a monitor with another scaling gets its size before it appears, not one pass later.
+
 ## [1.0.2.0] - 2026-11-10
 
 ### Fixed

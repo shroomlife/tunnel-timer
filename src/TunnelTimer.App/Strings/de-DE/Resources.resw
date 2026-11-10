@@ -103,4 +103,13 @@
   <data name="SchedulerHintTomorrowFormat" xml:space="preserve">
     <value>morgen, in {0}</value>
   </data>
+  <data name="TimeInputBox.PlaceholderText" xml:space="preserve">
+    <value>Uhrzeit tippen, z. B. 1656, Enter legt an</value>
+  </data>
+  <data name="TimeInputBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Startzeit als Ziffern eingeben</value>
+  </data>
+  <data name="SchedulerErrorInvalidTime" xml:space="preserve">
+    <value>Das ist keine Uhrzeit. Drei oder vier Ziffern eingeben, z. B. 930 oder 1656.</value>
+  </data>
 </root>
