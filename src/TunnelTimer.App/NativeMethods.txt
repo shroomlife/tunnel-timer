@@ -2,3 +2,5 @@ GetSystemMetricsForDpi
 GetDpiForSystem
 GetDpiForWindow
 RegisterApplicationRestart
+SetForegroundWindow
+AllowSetForegroundWindow

@@ -161,6 +161,13 @@ Save-Png (New-SquarePng 48) 'Square44x44Logo.targetsize-48_altform-lightunplated
 Save-Png (New-SquarePng 300) 'Square150x150Logo.scale-200.png'
 Save-Png (New-WidePng 620 300 0.6) 'Wide310x150Logo.scale-200.png'
 Save-Png (New-WidePng 1240 600 0.4) 'SplashScreen.scale-200.png'
-Save-Png (New-SquarePng 72) 'Logo.png'
+
+# The logo in the panel header is 28 px at 100 %. One image per display scale, so Windows
+# never has to resample it: a resampled logo is visibly soft next to sharp text.
+Save-Png (New-SquarePng 28) 'Logo.scale-100.png'
+Save-Png (New-SquarePng 35) 'Logo.scale-125.png'
+Save-Png (New-SquarePng 42) 'Logo.scale-150.png'
+Save-Png (New-SquarePng 56) 'Logo.scale-200.png'
+Save-Png (New-SquarePng 112) 'Logo.scale-400.png'
 
 Get-ChildItem $assets | Select-Object Name, Length

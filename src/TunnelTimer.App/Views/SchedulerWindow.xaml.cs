@@ -40,11 +40,20 @@ public sealed partial class SchedulerWindow : Window
         var usesTwentyFourHours = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern.Contains('H');
         StartTimeFlyout.ClockIdentifier = usesTwentyFourHours ? "24HourClock" : "12HourClock";
 
+        // Applied first and configured afterwards, like the widget: IsAlwaysOnTop set before
+        // SetPresenter did not reach the window.
         var presenter = OverlappedPresenter.Create();
+        AppWindow.SetPresenter(presenter);
         presenter.IsResizable = false;
         presenter.IsMaximizable = false;
         presenter.IsMinimizable = false;
-        AppWindow.SetPresenter(presenter);
+
+        // The panel behaves like a notification area flyout: while it is open it stays above
+        // other windows. Windows does not always let a background app take the foreground,
+        // and a panel that opens behind the browser looks like a click that did nothing. On
+        // top it is visible either way, and it stays in view while the user fetches a meeting
+        // link from another window.
+        presenter.IsAlwaysOnTop = true;
 
         AppWindow.Closing += (_, args) =>
         {
@@ -75,7 +84,14 @@ public sealed partial class SchedulerWindow : Window
                 ViewModel.ResetForm();
             }
 
+            // Activate alone left the panel behind other windows when it was already open or
+            // when another app held the foreground. A click on the notification area icon or
+            // a second launch gives this process the right to take the foreground, so it is
+            // claimed explicitly.
             Activate();
+            AppWindow.MoveInZOrderAtTop();
+            PInvoke.SetForegroundWindow(new HWND(WindowNative.GetWindowHandle(this)));
+
             await ViewModel.RefreshStartupStatusAsync();
         }
         catch (Exception exception)

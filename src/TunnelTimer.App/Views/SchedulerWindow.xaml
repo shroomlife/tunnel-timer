@@ -131,8 +131,8 @@
                     </Grid>
                     <TextBlock
                         HorizontalAlignment="Center"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        FontSize="13"
+                        Foreground="{ThemeResource SecondaryTextBrush}"
                         Text="{x:Bind ViewModel.SelectedTimeHint, Mode=OneWay}"
                         TextWrapping="Wrap" />
                     <Grid ColumnSpacing="8">
@@ -201,7 +201,7 @@
                 <TextBlock
                     x:Uid="NoMeetingsText"
                     Grid.Row="1"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Foreground="{ThemeResource SecondaryTextBrush}"
                     Visibility="{x:Bind VisibleWhenFalse(ViewModel.HasMeetings), Mode=OneWay}" />
                 <ListView
                     Grid.Row="1"

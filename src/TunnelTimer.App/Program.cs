@@ -31,6 +31,9 @@ public static class Program
         var mainInstance = AppInstance.FindOrRegisterForKey(InstanceKey);
         if (!mainInstance.IsCurrent)
         {
+            // This process was started by the user and may take the foreground; the running
+            // instance may not. Passing the right on lets its panel come to the front.
+            PInvoke.AllowSetForegroundWindow(mainInstance.ProcessId);
             await mainInstance.RedirectActivationToAsync(AppInstance.GetCurrent().GetActivatedEventArgs());
             return 0;
         }

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.2.0] - 2026-11-10
+
+### Fixed
+- **The panel sometimes opened behind other windows.** Two causes. The notification area icon held a left click back for the double-click time, and by then Windows no longer let the app take the foreground. The click is now handled at once. In addition the panel stays above other windows while it is open, like a notification area flyout, so it is visible even when Windows refuses the foreground, and it stays in view while a meeting link is fetched from another window.
+- **The panel opened about half a second late** for the same reason.
+- **Soft logo in the panel header.** A 72 px image was scaled down to 28 px. There is now one image per display scale.
+- **Thin grey text looked soft at 100 % scaling.** WinUI renders text with greyscale smoothing, not ClearType. Small secondary text is one point larger and darker.
+- The overdue time above 99 minutes steps down in font size instead of being scaled, which kept it between pixels.
+
+### Changed
+- With no countdown on screen the clock is read once a second instead of five times.
+
 ## [1.0.1.0] - 2026-11-10
 
 Stability pass after an independent review. The app is meant to run unattended all day, so every path that could end the process or leave a countdown stuck was closed.

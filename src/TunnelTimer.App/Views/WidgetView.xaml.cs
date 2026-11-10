@@ -29,9 +29,12 @@ public sealed partial class WidgetView : UserControl
             .TransformToVisual(null)
             .TransformBounds(new Rect(0, 0, ActionsPanel.ActualWidth, ActionsPanel.ActualHeight));
 
-    // Instance method on purpose: x:Bind resolves function bindings on the control instance.
+    // Instance methods on purpose: x:Bind resolves function bindings on the control instance.
 #pragma warning disable CA1822
     public Visibility VisibleWhenFalse(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
+    /// <summary>"12:34" and "+12:34" fit at full size; "+100:00" and longer need a smaller one.</summary>
+    public double TimeFontSize(string timeText) => timeText.Length <= 6 ? 64 : 48;
 #pragma warning restore CA1822
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

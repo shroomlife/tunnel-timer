@@ -47,28 +47,28 @@
             Text="{x:Bind ViewModel.Title, Mode=OneWay}"
             TextTrimming="CharacterEllipsis" />
 
-        <!-- Shrinks only when the text is wider than the widget, as with a three digit overdue time. -->
-        <Viewbox
+        <!--
+            The font size steps down for a three digit overdue time instead of scaling the
+            text: scaled text lands between pixels and loses its sharp edges.
+        -->
+        <TextBlock
+            x:Name="TimeTextBlock"
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            StretchDirection="DownOnly">
-            <TextBlock
-                x:Name="TimeTextBlock"
-                FontFamily="{StaticResource DisplayFontFamily}"
-                FontSize="64"
-                FontWeight="Bold"
-                Foreground="{ThemeResource PhaseUpcomingBrush}"
-                Text="{x:Bind ViewModel.TimeText, Mode=OneWay}"
-                Typography.NumeralAlignment="Tabular" />
-        </Viewbox>
+            FontFamily="{StaticResource DisplayFontFamily}"
+            FontSize="{x:Bind TimeFontSize(ViewModel.TimeText), Mode=OneWay}"
+            FontWeight="Bold"
+            Foreground="{ThemeResource PhaseUpcomingBrush}"
+            Text="{x:Bind ViewModel.TimeText, Mode=OneWay}"
+            Typography.NumeralAlignment="Tabular" />
 
         <TextBlock
             Grid.Row="3"
             Margin="0,0,0,12"
             HorizontalAlignment="Center"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Style="{ThemeResource CaptionTextBlockStyle}"
+            FontSize="13"
+            Foreground="{ThemeResource SecondaryTextBrush}"
             Text="{x:Bind ViewModel.StartText, Mode=OneWay}" />
 
         <!-- Without a link: "I'm in". With a link: "Join meeting" plus "I'm already in". -->

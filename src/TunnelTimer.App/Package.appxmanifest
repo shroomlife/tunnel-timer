@@ -10,7 +10,7 @@
   <Identity
     Name="shroomlife.TunnelTimerMeetingCountdown"
     Publisher="CN=300350BD-2924-497D-B5A0-BFB05ED75742"
-    Version="1.0.1.0" />
+    Version="1.0.2.0" />
 
   <Properties>
     <!-- Must match the name reserved in Partner Center. The Start menu name is set below. -->

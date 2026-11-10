@@ -9,7 +9,11 @@ namespace TunnelTimer.App.Services;
 /// </summary>
 public sealed class CountdownTicker
 {
-    private static readonly TimeSpan Interval = TimeSpan.FromMilliseconds(200);
+    // While a countdown is on screen the digits must change on the second, so the clock is
+    // read five times a second. With nothing to show, once a second is enough to notice the
+    // moment a meeting enters its lead time.
+    private static readonly TimeSpan VisibleInterval = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan IdleInterval = TimeSpan.FromSeconds(1);
 
     private readonly DispatcherQueueTimer _timer;
     private readonly MeetingSchedule _schedule;
@@ -22,7 +26,7 @@ public sealed class CountdownTicker
         _schedule.Changed += (_, _) => Run(Publish);
 
         _timer = dispatcherQueue.CreateTimer();
-        _timer.Interval = Interval;
+        _timer.Interval = IdleInterval;
         _timer.Tick += (_, _) => Run(Tick);
     }
 
@@ -62,6 +66,13 @@ public sealed class CountdownTicker
     private void Publish()
     {
         var snapshot = CountdownCalculator.Calculate(_schedule.Meetings, _timeProvider.GetLocalNow());
+
+        var interval = snapshot.Phase == CountdownPhase.Hidden ? IdleInterval : VisibleInterval;
+        if (_timer.Interval != interval)
+        {
+            _timer.Interval = interval;
+        }
+
         SnapshotUpdated?.Invoke(this, snapshot);
     }
 }

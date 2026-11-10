@@ -44,6 +44,8 @@
                     <SolidColorBrush x:Key="PaperBrush" Color="#FBF8F3" />
                     <SolidColorBrush x:Key="CardBrush" Color="#CCFFFFFF" />
                     <SolidColorBrush x:Key="CardBorderBrush" Color="#EDE7DC" />
+                    <!-- Small secondary text. Darker than the default secondary colour: without ClearType, thin light text looks soft at 100 % scaling. -->
+                    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#4A4960" />
 
                     <!-- The spectrum, used once per surface. -->
                     <LinearGradientBrush x:Key="RainbowBrush" StartPoint="0,0" EndPoint="1,0">
@@ -77,6 +79,7 @@
                     <SolidColorBrush x:Key="PaperBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="CardBrush" Color="{ThemeResource SystemColorWindowColor}" />
                     <SolidColorBrush x:Key="CardBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+                    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="RainbowBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="PhaseUpcomingBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                     <SolidColorBrush x:Key="PhaseImminentBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
