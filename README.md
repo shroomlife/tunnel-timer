@@ -93,8 +93,10 @@ Built with WinUI 3 on the Windows App SDK, .NET 10 and C#, packaged as MSIX. The
 
 A visible WinUI 3 window can be terminated from outside by a UI Automation client ([microsoft-ui-xaml#11139](https://github.com/microsoft/microsoft-ui-xaml/issues/11139)). There is no fix an app can apply. Tunnel Timer registers for an automatic restart, so the countdown is back within seconds, unless the app had been running for less than a minute.
 
-## Credits
+## License
 
-Digits and headings are set in [Outfit](https://github.com/Outfitio/Outfit-Fonts), licensed under the SIL Open Font License.
+Tunnel Timer is released under the [MIT License](LICENSE). You may use, change and share it, including commercially, as long as the copyright notice stays with it.
+
+The bundled font [Outfit](https://github.com/Outfitio/Outfit-Fonts) is not covered by the MIT License. It is licensed under the SIL Open Font License 1.1, see [`Outfit-OFL.txt`](src/TunnelTimer.App/Assets/Fonts/Outfit-OFL.txt).
 
 Made by [shroomlife](https://github.com/shroomlife).
