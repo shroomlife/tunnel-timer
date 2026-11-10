@@ -6,12 +6,13 @@
 <!--
   Composes one Microsoft Store screenshot (1440x810). The app windows are the real, unscaled
   captures from docs/; everything behind them is a neutral stand-in for "your work".
-  Select the scene with ?s=upcoming | imminent | overdue | panel.
+  Select the scene with ?s=upcoming | imminent | overdue | panel, or ?s=trio for the README
+  banner, which takes its size from the viewport.
   Rendered to PNG by scripts/render-store-assets.ps1.
 -->
 <style>
   html, body { margin: 0; }
-  body { width: 1440px; height: 810px; overflow: hidden; position: relative; background: #EDE9E1; font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif; }
+  body { width: 100vw; height: 100vh; overflow: hidden; position: relative; background: #EDE9E1; font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif; }
   .glow { position: absolute; border-radius: 50%; }
   .work { position: absolute; left: 96px; top: 84px; width: 1010px; height: 642px; border-radius: 10px; background: #FFFFFF; box-shadow: 0 30px 70px rgba(27, 26, 46, 0.16), 0 0 0 1px rgba(27, 26, 46, 0.08); overflow: hidden; }
   .work header { height: 44px; background: #F4F2EE; border-bottom: 1px solid #E7E2D9; display: flex; align-items: center; gap: 8px; padding: 0 16px; }
@@ -68,6 +69,30 @@
     widgetImage.style.top = '0';
   };
   widgetImage.src = '../../' + widgetFile;
+
+  if (scene === 'trio') {
+    // README banner: the three phases side by side, nothing behind them.
+    document.querySelector('.work').remove();
+    widget.remove();
+    const row = document.createElement('div');
+    row.style.cssText = 'position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:56px';
+    for (const file of ['widget-upcoming.png', 'widget-imminent.png', 'widget-overdue.png']) {
+      const shot = document.createElement('div');
+      shot.className = 'shot';
+      shot.style.position = 'relative';
+      const image = new Image();
+      image.onload = () => {
+        shot.style.width = (image.naturalWidth - 14) + 'px';
+        shot.style.height = (image.naturalHeight - 7) + 'px';
+        image.style.left = '-7px';
+        image.style.top = '0';
+      };
+      image.src = '../../' + file;
+      shot.appendChild(image);
+      row.appendChild(shot);
+    }
+    document.body.appendChild(row);
+  }
 
   if (scene === 'panel') {
     const panel = document.getElementById('panel');

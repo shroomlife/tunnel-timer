@@ -31,6 +31,9 @@ Save-Page 'scene.html?s=imminent' 1440 810 '2-imminent-join.png'
 Save-Page 'scene.html?s=overdue' 1440 810 '3-overdue.png'
 Save-Page 'scene.html?s=panel' 1440 810 '4-panel.png'
 
+# Banner at the top of the README.
+Save-Page 'scene.html?s=trio' 1200 400 '..\readme-banner.png'
+
 # Store logos, in the sizes Partner Center asks for.
 Save-Page 'art.html' 2160 2160 'box-art-2160.png'
 Save-Page 'art.html' 1440 2160 'poster-art-1440x2160.png'

@@ -12,9 +12,15 @@
 </p>
 
 <p align="center">
-  <img src="docs/widget-upcoming.png" width="230" alt="Widget ten minutes before a meeting, digits in cool colours">
-  <img src="docs/widget-imminent.png" width="230" alt="Widget in the last two minutes, digits in warm colours, with a Join meeting button">
-  <img src="docs/widget-overdue.png" width="230" alt="Widget after the start, counting up with a plus sign">
+  <a href="https://apps.microsoft.com/detail/9P3TCQN74F6F"><img src="https://img.shields.io/badge/Microsoft%20Store-in%20certification-7B61FF?logo=windows11&logoColor=white" alt="Microsoft Store: in certification"></a>
+  <img src="https://img.shields.io/badge/Windows-11-2EC4F1?logo=windows11&logoColor=white" alt="Windows 11">
+  <img src="https://img.shields.io/badge/.NET-10-3DDC97?logo=dotnet&logoColor=white" alt=".NET 10">
+  <img src="https://img.shields.io/badge/WinUI-3-FF9F1C" alt="WinUI 3">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-FF5E5B" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <img src="docs/readme-banner.png" width="900" alt="The countdown widget in its three phases: 08:23 in cool colours before the meeting, 01:33 in warm colours with a Join meeting button, and +01:23 counting up after the start">
 </p>
 
 ## Why
@@ -59,7 +65,7 @@ Tunnel Timer has no account, no telemetry and makes no network requests. Your me
 
 ## Install
 
-Tunnel Timer is free. A Microsoft Store listing is planned. Until then, build it yourself:
+Tunnel Timer is free. It has been submitted to the Microsoft Store as [Tunnel Timer: Meeting Countdown](https://apps.microsoft.com/detail/9P3TCQN74F6F) and is in certification; the link works once Microsoft has published it. Until then, build it yourself:
 
 ```powershell
 git clone https://github.com/shroomlife/tunnel-timer.git
