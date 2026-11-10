@@ -17,7 +17,7 @@ dotnet build src/TunnelTimer.App/TunnelTimer.App.csproj -p:Platform=x64 -p:AppxP
 
 # Run the debug build: register the loose-file layout once, then start it
 Add-AppxPackage -Register src\TunnelTimer.App\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\AppxManifest.xml
-Start-Process "shell:AppsFolder\shroomlife.TunnelTimer_szn2xxnwmd44j!App"
+Start-Process "shell:AppsFolder\shroomlife.TunnelTimerMeetingCountdown_szn2xxnwmd44j!App"
 
 # Release MSIX, signed with the developer certificate, output in dist/
 dotnet build src/TunnelTimer.App/TunnelTimer.App.csproj -c Release -p:Platform=x64
@@ -82,5 +82,5 @@ A cross-process UI Automation client can terminate any visible WinUI 3 window (m
 - Code, identifiers and comments are English. Visible text is localized (English default, German).
 - UI starts in light theme.
 - Version is `Major.Minor.Patch.0` in `Package.appxmanifest`. Bump it with every packaged change and add a `CHANGELOG.md` entry.
-- Package identity `shroomlife.TunnelTimer` with the shroomlife Store publisher id. The name has to be reserved in Partner Center before the first Store submission.
+- Package identity `shroomlife.TunnelTimerMeetingCountdown` is assigned by the Microsoft Store (Store ID `9P3TCQN74F6F`, reserved name "Tunnel Timer: Meeting Countdown"). `Properties/DisplayName` must equal the reserved name; the Start menu shows the shorter `VisualElements` name "Tunnel Timer". The first version section must not be 0, the last must stay 0.
 - Data lives in the package's `LocalState` folder (`meetings.json`) and `LocalSettings` (widget position). Nothing is written elsewhere and nothing leaves the machine.

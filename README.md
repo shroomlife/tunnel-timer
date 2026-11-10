@@ -55,7 +55,7 @@ The colour tells you how close you are:
 
 ## Privacy
 
-Tunnel Timer has no account, no telemetry and makes no network requests. Your meetings are stored in a file on your PC and nowhere else. The only thing that ever leaves the app is the meeting link you ask it to open.
+Tunnel Timer has no account, no telemetry and makes no network requests. Your meetings are stored in a file on your PC and nowhere else. The only thing that ever leaves the app is the meeting link you ask it to open. Details are in the [privacy policy](PRIVACY.md).
 
 ## Install
 
