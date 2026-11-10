@@ -31,6 +31,8 @@ pwsh scripts/generate-icons.ps1
 
 The quality gates are the compiler (zero warnings) and the unit tests. There is no linter.
 
+**After changing the version in `Package.appxmanifest`, build the Release package with `--no-incremental` after deleting `src/TunnelTimer.App/obj/x64/Release` and `bin/x64/Release`.** An incremental build reused the old generated manifest: the file was named `_1.0.1.0_` but the package inside still said 1.0.0.0, and Partner Center rejected it. Check the `<Identity>` line of `AppxManifest.xml` inside the `.msix` before uploading.
+
 ## Architecture
 
 ```
