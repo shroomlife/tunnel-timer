@@ -63,21 +63,37 @@ public sealed partial class SchedulerWindow : Window
     /// <summary>Shows the panel above the notification area and brings it to the front.</summary>
     public async void ShowPanel()
     {
-        if (!AppWindow.IsVisible)
+        // async void: the caller is a click or an activation, so nothing can observe a task.
+        // Every failure therefore has to end here.
+        try
         {
-            PlaceOnScreen();
-        }
+            // Opening resets the form. A click while the panel is already open only brings it
+            // to the front and keeps what the user has typed.
+            if (!AppWindow.IsVisible)
+            {
+                PlaceOnScreen();
+                ViewModel.ResetForm();
+            }
 
-        Activate();
-        await ViewModel.PrepareAsync();
+            Activate();
+            await ViewModel.RefreshStartupStatusAsync();
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Showing the scheduler failed", exception);
+        }
     }
 
     private void PlaceOnScreen()
     {
         var scale = PInvoke.GetDpiForWindow(new HWND(WindowNative.GetWindowHandle(this))) / DefaultDpi;
-        var size = new SizeInt32((int)Math.Round(WidthDip * scale), (int)Math.Round(HeightDip * scale));
         var margin = (int)Math.Round(ScreenMarginDip * scale);
         var workArea = DisplayArea.Primary.WorkArea;
+
+        // On a small or strongly scaled screen the panel is shortened to fit; its content scrolls.
+        var size = new SizeInt32(
+            Math.Min((int)Math.Round(WidthDip * scale), workArea.Width - 2 * margin),
+            Math.Min((int)Math.Round(HeightDip * scale), workArea.Height - 2 * margin));
 
         AppWindow.MoveAndResize(new RectInt32(
             workArea.X + workArea.Width - size.Width - margin,
@@ -93,13 +109,20 @@ public sealed partial class SchedulerWindow : Window
 
     private async void OnStartupToggled(object sender, RoutedEventArgs e)
     {
-        // Toggled also fires when the binding pushes the state in; only a real change counts.
-        if (StartupToggle.IsOn != ViewModel.IsStartupEnabled)
+        try
         {
-            await ViewModel.SetStartupEnabledAsync(StartupToggle.IsOn);
+            // Toggled also fires when the binding pushes the state in; only a real change counts.
+            if (StartupToggle.IsOn != ViewModel.IsStartupEnabled)
+            {
+                await ViewModel.SetStartupEnabledAsync(StartupToggle.IsOn);
 
-            // Windows may refuse the change; the switch then goes back to the real state.
-            StartupToggle.IsOn = ViewModel.IsStartupEnabled;
+                // Windows may refuse the change; the switch then goes back to the real state.
+                StartupToggle.IsOn = ViewModel.IsStartupEnabled;
+            }
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Changing start with Windows failed", exception);
         }
     }
 }

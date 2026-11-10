@@ -47,17 +47,21 @@
             Text="{x:Bind ViewModel.Title, Mode=OneWay}"
             TextTrimming="CharacterEllipsis" />
 
-        <TextBlock
-            x:Name="TimeTextBlock"
+        <!-- Shrinks only when the text is wider than the widget, as with a three digit overdue time. -->
+        <Viewbox
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontFamily="{StaticResource DisplayFontFamily}"
-            FontSize="64"
-            FontWeight="Bold"
-            Foreground="{ThemeResource PhaseUpcomingBrush}"
-            Text="{x:Bind ViewModel.TimeText, Mode=OneWay}"
-            Typography.NumeralAlignment="Tabular" />
+            StretchDirection="DownOnly">
+            <TextBlock
+                x:Name="TimeTextBlock"
+                FontFamily="{StaticResource DisplayFontFamily}"
+                FontSize="64"
+                FontWeight="Bold"
+                Foreground="{ThemeResource PhaseUpcomingBrush}"
+                Text="{x:Bind ViewModel.TimeText, Mode=OneWay}"
+                Typography.NumeralAlignment="Tabular" />
+        </Viewbox>
 
         <TextBlock
             Grid.Row="3"

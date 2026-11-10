@@ -70,16 +70,17 @@ public sealed partial class SchedulerViewModel : ObservableObject
     [ObservableProperty]
     public partial bool CanChangeStartup { get; private set; }
 
-    /// <summary>Resets the form each time the scheduler is opened.</summary>
-    public async Task PrepareAsync()
+    /// <summary>Resets the form. Called when the scheduler opens, not while it is in use.</summary>
+    public void ResetForm()
     {
         Title = string.Empty;
         Link = string.Empty;
         HasError = false;
         SelectedTime = NextHalfHour(_timeProvider.GetLocalNow().TimeOfDay);
         DescribeSelectedTime();
-        ApplyStartupStatus(await _startupService.GetStatusAsync());
     }
+
+    public async Task RefreshStartupStatusAsync() => ApplyStartupStatus(await _startupService.GetStatusAsync());
 
     public async Task SetStartupEnabledAsync(bool isEnabled) =>
         ApplyStartupStatus(await _startupService.SetEnabledAsync(isEnabled));
@@ -90,7 +91,7 @@ public sealed partial class SchedulerViewModel : ObservableObject
     private void Add()
     {
         var now = _timeProvider.GetLocalNow();
-        AddMeeting(ToStartToday(SelectedTime, now), now);
+        AddMeeting(ToNextStart(SelectedTime, now), now);
     }
 
     [RelayCommand]
@@ -119,29 +120,46 @@ public sealed partial class SchedulerViewModel : ObservableObject
         return TimeSpan.FromMinutes(halfHours * 30 % MinutesPerDay);
     }
 
-    private DateTimeOffset ToStartToday(TimeSpan timeOfDay, DateTimeOffset now)
+    /// <summary>
+    /// The next moment the clock shows this time of day: today, or tomorrow when that time
+    /// has already passed. That keeps a meeting just after midnight possible to enter late in
+    /// the evening; the hint under the time says which day is meant.
+    /// </summary>
+    private static DateTimeOffset ToNextStart(TimeSpan timeOfDay, DateTimeOffset now)
     {
-        var localStart = now.Date + timeOfDay;
-        return new DateTimeOffset(localStart, _timeProvider.LocalTimeZone.GetUtcOffset(localStart));
+        // .NET caches the local time zone. Clearing it here picks up a zone change that
+        // happened while the app was running, for example after travelling.
+        TimeZoneInfo.ClearCachedData();
+        var zone = TimeZoneInfo.Local;
+
+        var today = now.Date + timeOfDay;
+        var startsToday = new DateTimeOffset(today, zone.GetUtcOffset(today));
+        if (startsToday > now)
+        {
+            return startsToday;
+        }
+
+        var tomorrow = today.AddDays(1);
+        return new DateTimeOffset(tomorrow, zone.GetUtcOffset(tomorrow));
     }
 
     private void DescribeSelectedTime()
     {
         var now = _timeProvider.GetLocalNow();
-        var startsAt = ToStartToday(SelectedTime, now);
-        SelectedTimeText = startsAt.ToString("t", CultureInfo.CurrentCulture);
+        var startsAt = ToNextStart(SelectedTime, now);
+        SelectedTimeText = (now.Date + SelectedTime).ToString("t", CultureInfo.CurrentCulture);
 
         var timeUntilStart = startsAt - now;
-        if (timeUntilStart <= TimeSpan.Zero)
-        {
-            SelectedTimeHint = _strings.Get("SchedulerHintPast");
-            return;
-        }
-
         var totalMinutes = (int)Math.Ceiling(timeUntilStart.TotalMinutes);
         var duration = totalMinutes >= 60
             ? string.Create(CultureInfo.CurrentCulture, $"{totalMinutes / 60} h {totalMinutes % 60} min")
             : string.Create(CultureInfo.CurrentCulture, $"{totalMinutes} min");
+
+        if (startsAt.LocalDateTime.Date > now.Date)
+        {
+            SelectedTimeHint = string.Format(CultureInfo.CurrentCulture, _strings.Get("SchedulerHintTomorrowFormat"), duration);
+            return;
+        }
 
         if (timeUntilStart <= CountdownCalculator.LeadTime)
         {

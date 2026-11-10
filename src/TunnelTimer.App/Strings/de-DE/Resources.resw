@@ -91,9 +91,6 @@
   <data name="SchedulerHintSoonFormat" xml:space="preserve">
     <value>in {0}, Countdown erscheint sofort</value>
   </data>
-  <data name="SchedulerHintPast" xml:space="preserve">
-    <value>Heute schon vorbei</value>
-  </data>
   <data name="EarlierButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Fünf Minuten früher</value>
   </data>
@@ -102,5 +99,8 @@
   </data>
   <data name="StartTimeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Startzeit, öffnet die Zeitauswahl</value>
+  </data>
+  <data name="SchedulerHintTomorrowFormat" xml:space="preserve">
+    <value>morgen, in {0}</value>
   </data>
 </root>

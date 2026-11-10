@@ -15,8 +15,7 @@ public static class MeetingLink
             return true;
         }
 
-        if (!Uri.TryCreate(text.Trim(), UriKind.Absolute, out var parsed)
-            || (parsed.Scheme != Uri.UriSchemeHttps && parsed.Scheme != Uri.UriSchemeHttp))
+        if (!Uri.TryCreate(text.Trim(), UriKind.Absolute, out var parsed) || !IsAllowed(parsed))
         {
             return false;
         }
@@ -24,4 +23,9 @@ public static class MeetingLink
         link = parsed;
         return true;
     }
+
+    /// <summary>Whether a link may be stored and opened: no link at all, or a web address.</summary>
+    public static bool IsAllowed(Uri? link) =>
+        link is null
+        || (link.IsAbsoluteUri && (link.Scheme == Uri.UriSchemeHttps || link.Scheme == Uri.UriSchemeHttp));
 }

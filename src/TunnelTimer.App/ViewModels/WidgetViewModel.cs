@@ -66,9 +66,22 @@ public sealed partial class WidgetViewModel(
     [RelayCommand]
     private async Task JoinAsync()
     {
-        if (_meeting is { Link: { } link } meeting && await openLink(link))
+        if (_meeting is not { Link: { } link } meeting)
         {
-            schedule.Remove(meeting.Id);
+            return;
+        }
+
+        try
+        {
+            if (await openLink(link))
+            {
+                schedule.Remove(meeting.Id);
+            }
+        }
+        catch (Exception exception)
+        {
+            // Treated like "not opened": the widget stays and "I'm already in" still works.
+            AppLog.Error("Opening the meeting link failed", exception);
         }
     }
 }

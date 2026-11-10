@@ -113,9 +113,12 @@ public sealed partial class WidgetWindow : Window
         var scale = GetScale();
         var size = GetDesiredSize(scale);
 
-        // The remembered position is only used while it still lies on a connected monitor.
+        // The remembered position is only used while the whole widget still fits on a
+        // connected monitor. After a resolution, scaling or monitor change a partly visible
+        // widget could no longer be grabbed, so it goes back to the default place instead.
         if (_positionStore.Load() is { } saved
-            && DisplayArea.GetFromRect(new RectInt32(saved.X, saved.Y, size.Width, size.Height), DisplayAreaFallback.None) is not null)
+            && DisplayArea.GetFromRect(new RectInt32(saved.X, saved.Y, size.Width, size.Height), DisplayAreaFallback.None) is { } area
+            && Contains(area.WorkArea, saved, size))
         {
             AppWindow.Move(saved);
             return;
@@ -143,6 +146,12 @@ public sealed partial class WidgetWindow : Window
             NonClientRegionKind.Caption,
             [ToPixels(dragSurface, xamlRoot.RasterizationScale)]);
     }
+
+    private static bool Contains(RectInt32 area, PointInt32 position, SizeInt32 size) =>
+        position.X >= area.X
+        && position.Y >= area.Y
+        && position.X + size.Width <= area.X + area.Width
+        && position.Y + size.Height <= area.Y + area.Height;
 
     private static RectInt32 ToPixels(Rect bounds, double scale) => new(
         (int)Math.Round(bounds.X * scale),

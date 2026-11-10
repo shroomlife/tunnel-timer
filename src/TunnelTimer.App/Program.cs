@@ -1,7 +1,7 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
-using Windows.Storage;
+using TunnelTimer.App.Services;
 using Windows.Win32;
 using Windows.Win32.System.Recovery;
 
@@ -17,7 +17,12 @@ public static class Program
     [STAThread]
     public static async Task<int> Main()
     {
-        AppDomain.CurrentDomain.UnhandledException += (_, e) => LogCrash(e.ExceptionObject);
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => AppLog.Error("Unhandled exception, process ends", e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            AppLog.Error("Unobserved task exception", e.Exception);
+            e.SetObserved();
+        };
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
@@ -35,8 +40,12 @@ public static class Program
         // (microsoft/microsoft-ui-xaml#11139, no app-side fix), and a countdown that silently
         // disappears defeats its purpose. Open meetings are persisted, so the widget is back
         // within seconds. Not after a reboot: starting at sign-in is the user's own setting.
-        PInvoke.RegisterApplicationRestart(RestartArgument, REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT)
-            .ThrowOnFailure();
+        // The registration is a safety net, so its failure is logged and the app starts anyway.
+        var registration = PInvoke.RegisterApplicationRestart(RestartArgument, REGISTER_APPLICATION_RESTART_FLAGS.RESTART_NO_REBOOT);
+        if (registration.Failed)
+        {
+            AppLog.Error("Registering for restart failed", registration);
+        }
 
         Application.Start(static _ =>
         {
@@ -47,12 +56,5 @@ public static class Program
         });
 
         return 0;
-    }
-
-    /// <summary>Writes the crash to the app data folder; the process still terminates.</summary>
-    private static void LogCrash(object exception)
-    {
-        var logPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "crash.log");
-        File.AppendAllText(logPath, $"[{DateTimeOffset.Now:O}] {exception}{Environment.NewLine}{Environment.NewLine}");
     }
 }

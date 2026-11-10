@@ -9,37 +9,59 @@ public sealed class JsonMeetingStore(string folderPath) : IMeetingStore
 {
     private readonly string _filePath = Path.Combine(folderPath, "meetings.json");
 
+    /// <summary>
+    /// Never throws: the app starts through this call, and a file it cannot read must not
+    /// keep it from starting on every launch. An unreadable file is set aside for inspection.
+    /// Entries are validated by <see cref="MeetingSchedule"/>, not here.
+    /// </summary>
     public IReadOnlyList<Meeting> Load()
     {
-        if (!File.Exists(_filePath))
-        {
-            return [];
-        }
-
         try
         {
+            if (!File.Exists(_filePath))
+            {
+                return [];
+            }
+
             using var stream = File.OpenRead(_filePath);
             return JsonSerializer.Deserialize(stream, MeetingJsonContext.Default.ListMeeting) ?? [];
         }
-        catch (JsonException)
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            // An unreadable file must not block every future start. It is kept next to the
-            // new one for inspection instead of being overwritten.
-            File.Move(_filePath, _filePath + ".corrupt", overwrite: true);
+            AppLog.Error("Loading meetings failed", exception);
+            SetAside();
             return [];
         }
     }
 
     public void Save(IReadOnlyList<Meeting> meetings)
     {
-        // Write to a temporary file first so a crash mid-write cannot truncate the store.
+        // Write to a temporary file first so a crash mid-write cannot truncate the store, and
+        // flush it to the disk before the rename so a power loss cannot leave an empty file
+        // under the real name.
         var temporaryPath = _filePath + ".tmp";
         using (var stream = File.Create(temporaryPath))
         {
             JsonSerializer.Serialize(stream, [.. meetings], MeetingJsonContext.Default.ListMeeting);
+            stream.Flush(flushToDisk: true);
         }
 
         File.Move(temporaryPath, _filePath, overwrite: true);
+    }
+
+    private void SetAside()
+    {
+        try
+        {
+            if (File.Exists(_filePath))
+            {
+                File.Move(_filePath, _filePath + ".corrupt", overwrite: true);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            AppLog.Error("Setting the unreadable meetings file aside failed", exception);
+        }
     }
 }
 

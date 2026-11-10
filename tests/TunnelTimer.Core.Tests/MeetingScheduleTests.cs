@@ -10,13 +10,73 @@ public sealed class MeetingScheduleTests
 
         public int SaveCount { get; private set; }
 
+        /// <summary>While set, every save fails like a locked file would.</summary>
+        public bool FailSaves { get; set; }
+
         public IReadOnlyList<Meeting> Load() => Saved;
 
         public void Save(IReadOnlyList<Meeting> meetings)
         {
+            if (FailSaves)
+            {
+                throw new IOException("The file is in use.");
+            }
+
             Saved = [.. meetings];
             SaveCount++;
         }
+    }
+
+    [Fact]
+    public void Failed_save_still_applies_the_change_and_notifies()
+    {
+        var meeting = new Meeting(Guid.NewGuid(), "Call", Now.AddMinutes(5));
+        var store = new InMemoryMeetingStore(meeting) { FailSaves = true };
+        var schedule = new MeetingSchedule(store);
+        var changedCount = 0;
+        Exception? reported = null;
+        schedule.Changed += (_, _) => changedCount++;
+        schedule.SaveFailed += (_, exception) => reported = exception;
+
+        schedule.Remove(meeting.Id);
+
+        Assert.Empty(schedule.Meetings);
+        Assert.Equal(1, changedCount);
+        Assert.IsType<IOException>(reported);
+    }
+
+    [Fact]
+    public void Pending_save_is_written_once_the_store_works_again()
+    {
+        var meeting = new Meeting(Guid.NewGuid(), "Call", Now.AddMinutes(5));
+        var store = new InMemoryMeetingStore(meeting) { FailSaves = true };
+        var schedule = new MeetingSchedule(store);
+        schedule.Remove(meeting.Id);
+
+        store.FailSaves = false;
+        schedule.RetryPendingSave();
+        schedule.RetryPendingSave();
+
+        Assert.Empty(store.Saved);
+        Assert.Equal(1, store.SaveCount);
+    }
+
+    [Fact]
+    public void Broken_stored_entries_are_dropped_and_bad_links_removed()
+    {
+        var good = new Meeting(Guid.NewGuid(), "Good", Now.AddHours(1), new Uri("https://example.com/call"));
+        var badLink = new Meeting(Guid.NewGuid(), "Bad link", Now.AddHours(2), new Uri("file:///C:/Windows/System32/calc.exe"));
+        var relativeLink = new Meeting(Guid.NewGuid(), "Relative link", Now.AddHours(3), new Uri("abc", UriKind.Relative));
+        var noId = new Meeting(Guid.Empty, "No id", Now.AddHours(4));
+        var noTitle = new Meeting(Guid.NewGuid(), null!, Now.AddHours(5));
+        var store = new InMemoryMeetingStore(good, null!, badLink, relativeLink, noId, noTitle);
+
+        var schedule = new MeetingSchedule(store);
+
+        Assert.Equal(["Good", "Bad link", "Relative link"], schedule.Meetings.Select(meeting => meeting.Title));
+        Assert.Equal(good.Link, schedule.Meetings[0].Link);
+        Assert.Null(schedule.Meetings[1].Link);
+        Assert.Null(schedule.Meetings[2].Link);
     }
 
     [Fact]

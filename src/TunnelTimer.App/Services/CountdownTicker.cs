@@ -19,23 +19,41 @@ public sealed class CountdownTicker
     {
         _schedule = schedule;
         _timeProvider = timeProvider;
-        _schedule.Changed += (_, _) => Publish();
+        _schedule.Changed += (_, _) => Run(Publish);
 
         _timer = dispatcherQueue.CreateTimer();
         _timer.Interval = Interval;
-        _timer.Tick += (_, _) => Tick();
+        _timer.Tick += (_, _) => Run(Tick);
     }
 
     public event EventHandler<CountdownSnapshot>? SnapshotUpdated;
 
     public void Start()
     {
-        Tick();
+        Run(Tick);
         _timer.Start();
+    }
+
+    /// <summary>
+    /// One failing pass must not end the countdown. Because every pass starts again from the
+    /// clock and the schedule, the next one repairs whatever this one could not show.
+    /// </summary>
+    private static void Run(Action pass)
+    {
+        try
+        {
+            pass();
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Countdown pass failed", exception);
+        }
     }
 
     private void Tick()
     {
+        _schedule.RetryPendingSave();
+
         // RemoveStale raises Changed when it drops something, which publishes on its own.
         _schedule.RemoveStale(_timeProvider.GetLocalNow());
         Publish();

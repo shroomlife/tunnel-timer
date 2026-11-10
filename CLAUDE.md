@@ -52,6 +52,18 @@ tests/TunnelTimer.Core.Tests xunit.v3
 
 All time logic lives in `Core`. The app project only contains windows, the tray icon and storage.
 
+## Staying alive
+
+The app runs unattended all day; a crash or a dead countdown is the worst failure. These rules keep it up, keep them when changing code:
+
+- **The disk never decides behaviour.** `MeetingSchedule.Apply` changes the list and raises `Changed` whether or not the save worked. A failed save raises `SaveFailed` and is retried by the ticker through `RetryPendingSave`.
+- **Stored data is untrusted.** `JsonMeetingStore.Load` never throws and sets an unreadable file aside. `MeetingSchedule` drops broken entries and removes links that `MeetingLink.IsAllowed` rejects.
+- **Nothing optional may throw into the UI thread.** Startup task, link launcher, tray icon and restart registration all catch, log through `AppLog` and carry on. `async void` handlers wrap their whole body.
+- **`App.UnhandledException` logs and continues**, and `CountdownTicker.Run` guards every pass. That is safe only because each pass recomputes everything from the clock and the schedule.
+- `AppLog` writes `app.log` in the package's `LocalState` folder, capped at 256 KB, and never throws.
+
+Not solved: the widget is only visible on the virtual desktop it appeared on.
+
 ## Things that are easy to get wrong
 
 - **The countdown is never counted down.** `CountdownTicker` recomputes the state from `TimeProvider` five times a second. That keeps it correct after standby and free of drift. Do not introduce a decrementing counter.

@@ -11,14 +11,19 @@ public sealed class MeetingSchedule
 
     private readonly IMeetingStore _store;
     private List<Meeting> _meetings;
+    private bool _hasUnsavedChanges;
 
     public MeetingSchedule(IMeetingStore store)
     {
         _store = store;
-        _meetings = Sort(store.Load());
+        _meetings = Sort(Sanitize(store.Load()));
     }
 
+    /// <summary>Raised after the list changed, whether or not it could be saved.</summary>
     public event EventHandler? Changed;
+
+    /// <summary>Raised when the list could not be written. The change itself still applies.</summary>
+    public event EventHandler<Exception>? SaveFailed;
 
     public IReadOnlyList<Meeting> Meetings => _meetings;
 
@@ -53,15 +58,59 @@ public sealed class MeetingSchedule
         }
     }
 
+    /// <summary>Writes the list again if an earlier save failed. Cheap when nothing is pending.</summary>
+    public void RetryPendingSave()
+    {
+        if (_hasUnsavedChanges)
+        {
+            Save();
+        }
+    }
+
     private static bool IsStale(Meeting meeting, DateTimeOffset now) => now - meeting.StartsAt > StaleAfter;
 
     private static List<Meeting> Sort(IEnumerable<Meeting> meetings) =>
         [.. meetings.OrderBy(meeting => meeting.StartsAt)];
 
+    /// <summary>
+    /// Stored data is not trusted: a hand-edited or damaged file can hold empty entries or a
+    /// link that is not a web address. Broken entries are dropped, a bad link is removed, so
+    /// what reaches the rest of the app always satisfies the same rules as fresh input.
+    /// </summary>
+    private static IEnumerable<Meeting> Sanitize(IEnumerable<Meeting?>? stored)
+    {
+        foreach (var meeting in stored ?? [])
+        {
+            if (meeting is null || meeting.Id == Guid.Empty || meeting.Title is null)
+            {
+                continue;
+            }
+
+            yield return MeetingLink.IsAllowed(meeting.Link) ? meeting : meeting with { Link = null };
+        }
+    }
+
     private void Apply(IEnumerable<Meeting> meetings)
     {
+        // The in-memory change and its notification must not depend on the disk: a widget
+        // that cannot be dismissed because a file was locked would be worse than a list that
+        // is saved a moment later.
         _meetings = Sort(meetings);
-        _store.Save(_meetings);
+        Save();
         Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void Save()
+    {
+        try
+        {
+            _store.Save(_meetings);
+            _hasUnsavedChanges = false;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            _hasUnsavedChanges = true;
+            SaveFailed?.Invoke(this, exception);
+        }
     }
 }
